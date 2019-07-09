@@ -22,7 +22,7 @@ ScriptFixture::~ScriptFixture() = default;
 
 void ScriptFixture::loadScript(const JsonNode & scriptConfig)
 {
-	subject = VLC->scriptHandler->loadFromJson(scriptConfig, "test");
+	subject = VLC->scriptHandler->loadFromJson("core", scriptConfig, "test");
 
 	GTEST_ASSERT_NE(subject, nullptr);
 

@@ -157,6 +157,8 @@ public:
 	CGameState();
 	virtual ~CGameState();
 
+	void preInit(Services * services);
+
 	void init(const IMapService * mapService, StartInfo * si, bool allowSavingRandomMap = false);
 	void updateOnLoad(StartInfo * si);
 
@@ -171,6 +173,8 @@ public:
 	RumorState rumor;
 
 	static boost::shared_mutex mutex;
+
+	void updateEntity(Metatype metatype, int32_t index, const JsonNode & data) override;
 
 	void giveHeroArtifact(CGHeroInstance *h, ArtifactID aid);
 
@@ -251,7 +255,7 @@ private:
 	};
 
 	// ----- initialization -----
-
+	void preInitAuto();
 	void initNewGame(const IMapService * mapService, bool allowSavingRandomMap);
 	void initCampaign();
 	void checkMapChecksum();
@@ -300,6 +304,7 @@ private:
 	// ---- data -----
 	std::shared_ptr<CApplier<CBaseForGSApply>> applier;
 	CRandomGenerator rand;
+	Services * services;
 
 	friend class CCallback;
 	friend class CClient;

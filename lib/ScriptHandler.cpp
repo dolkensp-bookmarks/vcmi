@@ -206,7 +206,7 @@ std::vector<JsonNode> ScriptHandler::loadLegacyData(size_t dataSize)
 	return std::vector<JsonNode>();
 }
 
-ScriptPtr ScriptHandler::loadFromJson(const JsonNode & json, const std::string & identifier) const
+ScriptPtr ScriptHandler::loadFromJson(const std::string & scope, const JsonNode & json, const std::string & identifier) const
 {
 	ScriptPtr ret = std::make_shared<ScriptImpl>(this);
 
@@ -218,7 +218,7 @@ ScriptPtr ScriptHandler::loadFromJson(const JsonNode & json, const std::string &
 
 void ScriptHandler::loadObject(std::string scope, std::string name, const JsonNode & data)
 {
-	auto object = loadFromJson(data, normalizeIdentifier(scope, "core", name));
+	auto object = loadFromJson(scope, data, normalizeIdentifier(scope, "core", name));
 	objects[object->identifier] = object;
 }
 

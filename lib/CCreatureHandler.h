@@ -203,20 +203,15 @@ private:
 	void fillWarMachine();
 };
 
-class DLL_LINKAGE CCreatureHandler : public IHandlerBase, public CreatureService
+class DLL_LINKAGE CCreatureHandler : public CHandlerBase<CreatureID, Creature, CCreature, CreatureService>
 {
 private:
 	CBonusSystemNode allCreatures;
 	CBonusSystemNode creaturesOfLevel[GameConstants::CREATURES_PER_TOWN + 1];//index 0 is used for creatures of unknown tier or outside <1-7> range
 
-	/// load one creature from json config
-	CCreature * loadFromJson(const JsonNode & node, const std::string & identifier);
-
 	void loadJsonAnimation(CCreature * creature, const JsonNode & graphics);
 	void loadStackExperience(CCreature * creature, const JsonNode &input);
 	void loadCreatureJson(CCreature * creature, const JsonNode & config);
-
-	/// loading functions
 
 	/// adding abilities from ZCRTRAIT.TXT
 	void loadBonuses(JsonNode & creature, std::string bonuses);
@@ -234,9 +229,12 @@ private:
 	/// help function for parsing CREXPBON.txt
 	int stringToNumber(std::string & s);
 
+protected:
+	const std::vector<std::string> & getTypeNames() const override;
+	CCreature * loadFromJson(const std::string & scope, const JsonNode & node, const std::string & identifier, size_t index) override;
+
 public:
 	std::set<CreatureID> doubledCreatures; //they get double week
-	std::vector<ConstTransitivePtr<CCreature> > creatures; //creature ID -> creature info.
 
 	//stack exp
 	std::vector<std::vector<ui32> > expRanks; // stack experience needed for certain rank, index 0 for other tiers (?)
@@ -258,14 +256,6 @@ public:
 	CCreatureHandler();
 	~CCreatureHandler();
 
-	const Entity * getBaseByIndex(const int32_t index) const override;
-
-	const Creature * getById(const CreatureID & id) const override;
-	const Creature * getByIndex(const int32_t index) const override;
-
-	void forEachBase(const std::function<void(const Entity * entity, bool & stop)> & cb) const override;
-	void forEach(const std::function<void(const Creature * entity, bool & stop)> & cb) const override;
-
 	/// load all creatures from H3 files
 	void loadCrExpBon();
 	/// generates tier-specific bonus tree entries
@@ -275,16 +265,13 @@ public:
 
 	std::vector<JsonNode> loadLegacyData(size_t dataSize) override;
 
-	void loadObject(std::string scope, std::string name, const JsonNode & data) override;
-	void loadObject(std::string scope, std::string name, const JsonNode & data, size_t index) override;
-
 	std::vector<bool> getDefaultAllowed() const override;
 
 	template <typename Handler> void serialize(Handler &h, const int version)
 	{
 		//TODO: should be optimized, not all these informations needs to be serialized (same for ccreature)
 		h & doubledCreatures;
-		h & creatures;
+		h & objects;
 		h & expRanks;
 		h & maxExpPerBattle;
 		h & expAfterUpgrade;

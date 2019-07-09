@@ -92,7 +92,7 @@ public:
 	std::vector<bool> getDefaultAllowed() const override;
 	std::vector<JsonNode> loadLegacyData(size_t dataSize) override;
 
-	ScriptPtr loadFromJson(const JsonNode & json, const std::string & identifier) const;
+	ScriptPtr loadFromJson(const std::string & scope, const JsonNode & json, const std::string & identifier) const;
 
 	void loadObject(std::string scope, std::string name, const JsonNode & data) override;
 	void loadObject(std::string scope, std::string name, const JsonNode & data, size_t index) override;

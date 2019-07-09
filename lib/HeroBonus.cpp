@@ -1254,13 +1254,13 @@ std::string Bonus::Description() const
 				str << SpellID(sid).toSpell(VLC->spells())->getName();
 				break;
 			case CREATURE_ABILITY:
-				str << VLC->creh->creatures[sid]->namePl;
+				str << VLC->creh->objects[sid]->namePl;
 				break;
 			case SECONDARY_SKILL:
 				str << VLC->skillh->skillName(sid);
 				break;
 			case HERO_SPECIAL:
-				str << VLC->heroh->heroes[sid]->name;
+				str << VLC->heroh->objects[sid]->name;
 				break;
 			default:
 				//todo: handle all possible sources
@@ -1649,7 +1649,7 @@ CCreatureTypeLimiter::CCreatureTypeLimiter()
 
 void CCreatureTypeLimiter::setCreature (CreatureID id)
 {
-	creature = VLC->creh->creatures[id];
+	creature = VLC->creh->objects[id];
 }
 
 std::string CCreatureTypeLimiter::toString() const
@@ -1815,7 +1815,7 @@ int CreatureFactionLimiter::limit(const BonusLimitationContext &context) const
 std::string CreatureFactionLimiter::toString() const
 {
 	boost::format fmt("CreatureFactionLimiter(faction=%s)");
-	fmt %  VLC->townh->factions[faction]->identifier;
+	fmt % VLC->factions()->getByIndex(faction)->getJsonKey();
 	return fmt.str();
 }
 
@@ -1824,7 +1824,7 @@ JsonNode CreatureFactionLimiter::toJsonNode() const
 	JsonNode root(JsonNode::JsonType::DATA_STRUCT);
 
 	root["type"].String() = "CREATURE_FACTION_LIMITER";
-	root["parameters"].Vector().push_back(JsonUtils::stringNode(VLC->townh->factions[faction]->identifier));
+	root["parameters"].Vector().push_back(JsonUtils::stringNode(VLC->factions()->getByIndex(faction)->getJsonKey()));
 
 	return root;
 }

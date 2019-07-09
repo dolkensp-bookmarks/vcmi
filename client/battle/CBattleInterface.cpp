@@ -964,7 +964,7 @@ void CBattleInterface::unitAdded(const CStack * stack)
 
 	if(stack->initialPosition < 0) //turret
 	{
-		const CCreature *turretCreature = CGI->creh->creatures[siegeH->town->town->clientInfo.siegeShooter];
+		const CCreature *turretCreature = CGI->creh->objects[siegeH->town->town->clientInfo.siegeShooter];
 
 		creAnims[stack->ID] = AnimationControls::getAnimation(turretCreature);
 
@@ -1012,7 +1012,7 @@ void CBattleInterface::initStackProjectile(const CStack * stack)
 {
 	const CCreature * creature;//creature whose shots should be loaded
 	if(stack->getCreature()->idNumber == CreatureID::ARROW_TOWERS)
-		creature = CGI->creh->creatures[siegeH->town->town->clientInfo.siegeShooter];
+		creature = CGI->creh->objects[siegeH->town->town->clientInfo.siegeShooter];
 	else
 		creature = stack->getCreature();
 

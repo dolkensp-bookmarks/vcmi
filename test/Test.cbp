@@ -152,6 +152,9 @@
 		<Unit filename="mock/mock_spells_effects_Registry.h" />
 		<Unit filename="mock/mock_vstd_CLoggerBase.h" />
 		<Unit filename="mock/mock_vstd_RNG.h" />
+		<Unit filename="netpacks/EntitiesChangedTest.cpp" />
+		<Unit filename="netpacks/NetPackFixture.cpp" />
+		<Unit filename="netpacks/NetPackFixture.h" />
 		<Unit filename="rmg/CRmgTemplateTest.cpp" />
 		<Unit filename="scripting/LuaSpellEffectAPITest.cpp" />
 		<Unit filename="scripting/LuaSpellEffectTest.cpp" />

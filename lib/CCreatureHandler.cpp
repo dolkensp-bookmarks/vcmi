@@ -126,7 +126,7 @@ bool CCreature::isUndead() const
  */
 bool CCreature::isGood () const
 {
-	return VLC->townh->factions[faction]->alignment == EAlignment::GOOD;
+	return (*VLC->townh)[faction]->alignment == EAlignment::GOOD;
 }
 
 /**
@@ -135,7 +135,7 @@ bool CCreature::isGood () const
  */
 bool CCreature::isEvil () const
 {
-	return VLC->townh->factions[faction]->alignment == EAlignment::EVIL;
+	return (*VLC->townh)[faction]->alignment == EAlignment::EVIL;
 }
 
 si32 CCreature::maxAmount(const std::vector<si32> &res) const //how many creatures can be bought
@@ -173,7 +173,7 @@ bool CCreature::isMyUpgrade(const CCreature *anotherCre) const
 
 bool CCreature::valid() const
 {
-	return this == VLC->creh->creatures[idNumber];
+	return this == VLC->creh->objects[idNumber];
 }
 
 std::string CCreature::nodeName() const
@@ -183,7 +183,7 @@ std::string CCreature::nodeName() const
 
 bool CCreature::isItNativeTerrain(int terrain) const
 {
-	return VLC->townh->factions[faction]->nativeTerrain == terrain;
+	return (*VLC->townh)[faction]->nativeTerrain == terrain;
 }
 
 void CCreature::setId(CreatureID ID)
@@ -270,7 +270,7 @@ const CCreature * CCreatureHandler::getCreature(const std::string & scope, const
 	if(!index)
 		throw std::runtime_error("Creature not found "+identifier);
 
-	return creatures[*index];
+	return objects[*index];
 }
 
 void CCreatureHandler::loadCommanders()
@@ -365,7 +365,7 @@ void CCreatureHandler::loadBonuses(JsonNode & creature, std::string bonuses)
 
 std::vector<JsonNode> CCreatureHandler::loadLegacyData(size_t dataSize)
 {
-	creatures.resize(dataSize);
+	objects.resize(dataSize);
 	std::vector<JsonNode> h3Data;
 	h3Data.reserve(dataSize);
 
@@ -441,84 +441,94 @@ std::vector<JsonNode> CCreatureHandler::loadLegacyData(size_t dataSize)
 	return h3Data;
 }
 
-void CCreatureHandler::loadObject(std::string scope, std::string name, const JsonNode & data)
+CCreature * CCreatureHandler::loadFromJson(const std::string & scope, const JsonNode & node, const std::string & identifier, size_t index)
 {
-	auto object = loadFromJson(data, normalizeIdentifier(scope, "core", name));
-	object->setId(CreatureID(creatures.size()));
-	object->iconIndex = object->idNumber + 2;
+	auto cre = new CCreature();
 
-	creatures.push_back(object);
+	if(node["hasDoubleWeek"].Bool())
+	{
+		doubledCreatures.insert(CreatureID(index));
+	}
+
+	const JsonNode & name = node["name"];
+	cre->identifier = identifier;
+	cre->nameSing = name["singular"].String();
+	cre->namePl = name["plural"].String();
+
+	cre->cost = Res::ResourceSet(node["cost"]);
+
+	cre->fightValue = node["fightValue"].Float();
+	cre->AIValue = node["aiValue"].Float();
+	cre->growth = node["growth"].Float();
+	cre->hordeGrowth = node["horde"].Float(); // Needed at least until configurable buildings
+
+	cre->addBonus(node["hitPoints"].Float(), Bonus::STACK_HEALTH);
+	cre->addBonus(node["speed"].Float(), Bonus::STACKS_SPEED);
+	cre->addBonus(node["attack"].Float(), Bonus::PRIMARY_SKILL, PrimarySkill::ATTACK);
+	cre->addBonus(node["defense"].Float(), Bonus::PRIMARY_SKILL, PrimarySkill::DEFENSE);
+
+	cre->addBonus(node["damage"]["min"].Float(), Bonus::CREATURE_DAMAGE, 1);
+	cre->addBonus(node["damage"]["max"].Float(), Bonus::CREATURE_DAMAGE, 2);
+
+	assert(node["damage"]["min"].Float() <= node["damage"]["max"].Float());
+
+	cre->ammMin = node["advMapAmount"]["min"].Float();
+	cre->ammMax = node["advMapAmount"]["max"].Float();
+	assert(cre->ammMin <= cre->ammMax);
+
+	if (!node["shots"].isNull())
+		cre->addBonus(node["shots"].Float(), Bonus::SHOTS);
+
+	if (node["spellPoints"].isNull())
+		cre->addBonus(node["spellPoints"].Float(), Bonus::CASTS);
+
+	cre->doubleWide = node["doubleWide"].Bool();
+
+	loadStackExperience(cre, node["stackExperience"]);
+	loadJsonAnimation(cre, node["graphics"]);
+	loadCreatureJson(cre, node);
+
+	cre->setId(CreatureID(index));
+	cre->iconIndex = cre->getIndex() + 2;
+
+	for(auto & extraName : node["extraNames"].Vector())
+	{
+		for(auto type_name : getTypeNames())
+			registerObject(scope, type_name, extraName.String(), cre->getIndex());
+	}
 
 	VLC->modh->identifiers.requestIdentifier(scope, "object", "monster", [=](si32 index)
 	{
 		JsonNode conf;
 		conf.setMeta(scope);
 
-		VLC->objtypeh->loadSubObject(object->identifier, conf, Obj::MONSTER, object->idNumber.num);
-		if (!object->advMapDef.empty())
+		VLC->objtypeh->loadSubObject(cre->identifier, conf, Obj::MONSTER, cre->idNumber.num);
+		if (!cre->advMapDef.empty())
 		{
 			JsonNode templ;
-			templ["animation"].String() = object->advMapDef;
-			VLC->objtypeh->getHandlerFor(Obj::MONSTER, object->idNumber.num)->addTemplate(templ);
+			templ["animation"].String() = cre->advMapDef;
+			VLC->objtypeh->getHandlerFor(Obj::MONSTER, cre->idNumber.num)->addTemplate(templ);
 		}
 
 		// object does not have any templates - this is not usable object (e.g. pseudo-creature like Arrow Tower)
-		if (VLC->objtypeh->getHandlerFor(Obj::MONSTER, object->idNumber.num)->getTemplates().empty())
-			VLC->objtypeh->removeSubObject(Obj::MONSTER, object->idNumber.num);
+		if (VLC->objtypeh->getHandlerFor(Obj::MONSTER, cre->idNumber.num)->getTemplates().empty())
+			VLC->objtypeh->removeSubObject(Obj::MONSTER, cre->idNumber.num);
 	});
 
-	registerObject(scope, "creature", name, object->idNumber);
-
-	for(auto node : data["extraNames"].Vector())
-	{
-		registerObject(scope, "creature", node.String(), object->idNumber);
-	}
+	return cre;
 }
 
-void CCreatureHandler::loadObject(std::string scope, std::string name, const JsonNode & data, size_t index)
+const std::vector<std::string> & CCreatureHandler::getTypeNames() const
 {
-	auto object = loadFromJson(data, normalizeIdentifier(scope, "core", name));
-	object->setId(CreatureID(index));
-	object->iconIndex = object->idNumber + 2;
-
-	if(data["hasDoubleWeek"].Bool()) //
-	{
-		doubledCreatures.insert (object->idNumber); //we need to have id (or identifier) before it is inserted
-	}
-
-	assert(creatures[index] == nullptr); // ensure that this id was not loaded before
-	creatures[index] = object;
-
-	VLC->modh->identifiers.requestIdentifier(scope, "object", "monster", [=](si32 index)
-	{
-		JsonNode conf;
-		conf.setMeta(scope);
-
-		VLC->objtypeh->loadSubObject(object->identifier, conf, Obj::MONSTER, object->idNumber.num);
-		if (!object->advMapDef.empty())
-		{
-			JsonNode templ;
-			templ["animation"].String() = object->advMapDef;
-			VLC->objtypeh->getHandlerFor(Obj::MONSTER, object->idNumber.num)->addTemplate(templ);
-		}
-
-		// object does not have any templates - this is not usable object (e.g. pseudo-creature like Arrow Tower)
-		if (VLC->objtypeh->getHandlerFor(Obj::MONSTER, object->idNumber.num)->getTemplates().empty())
-			VLC->objtypeh->removeSubObject(Obj::MONSTER, object->idNumber.num);
-	});
-
-	registerObject(scope, "creature", name, object->idNumber);
-	for(auto & node : data["extraNames"].Vector())
-	{
-		registerObject(scope, "creature", node.String(), object->idNumber);
-	}
+	static const std::vector<std::string> typeNames = { "creature" };
+	return typeNames;
 }
 
 std::vector<bool> CCreatureHandler::getDefaultAllowed() const
 {
 	std::vector<bool> ret;
 
-	for(const CCreature * crea : creatures)
+	for(const CCreature * crea : objects)
 	{
 		ret.push_back(crea ? !crea->special : false);
 	}
@@ -580,7 +590,7 @@ void CCreatureHandler::loadCrExpBon()
 			loadStackExp(b, bl, parser);
 			for(auto b : bl)
 			{
-				creatures[sid]->addNewBonus(b); //add directly to CCreature Node
+				objects[sid]->addNewBonus(b); //add directly to CCreature Node
 			}
 		}
 		while (parser.endLine());
@@ -625,8 +635,8 @@ void CCreatureHandler::loadCrExpBon()
 			expBonParser.endLine();
 		}
 		//skeleton gets exp penalty
-			creatures[56].get()->addBonus(-50, Bonus::EXP_MULTIPLIER, -1);
-			creatures[57].get()->addBonus(-50, Bonus::EXP_MULTIPLIER, -1);
+			objects[56].get()->addBonus(-50, Bonus::EXP_MULTIPLIER, -1);
+			objects[57].get()->addBonus(-50, Bonus::EXP_MULTIPLIER, -1);
 		//exp for tier >7, rank 11
 			expRanks[0].push_back(147000);
 			expAfterUpgrade = 75; //percent
@@ -687,50 +697,6 @@ void CCreatureHandler::loadUnitAnimInfo(JsonNode & graphics, CLegacyConfigParser
 	if (missile["frameAngles"].Vector()[0].Float() == 0 &&
 	    missile["attackClimaxFrame"].Float() == 0)
 		graphics.Struct().erase("missile");
-}
-
-CCreature * CCreatureHandler::loadFromJson(const JsonNode & node, const std::string & identifier)
-{
-	auto  cre = new CCreature();
-
-	const JsonNode & name = node["name"];
-	cre->identifier = identifier;
-	cre->nameSing = name["singular"].String();
-	cre->namePl = name["plural"].String();
-
-	cre->cost = Res::ResourceSet(node["cost"]);
-
-	cre->fightValue = node["fightValue"].Float();
-	cre->AIValue = node["aiValue"].Float();
-	cre->growth = node["growth"].Float();
-	cre->hordeGrowth = node["horde"].Float(); // Needed at least until configurable buildings
-
-	cre->addBonus(node["hitPoints"].Float(), Bonus::STACK_HEALTH);
-	cre->addBonus(node["speed"].Float(), Bonus::STACKS_SPEED);
-	cre->addBonus(node["attack"].Float(), Bonus::PRIMARY_SKILL, PrimarySkill::ATTACK);
-	cre->addBonus(node["defense"].Float(), Bonus::PRIMARY_SKILL, PrimarySkill::DEFENSE);
-
-	cre->addBonus(node["damage"]["min"].Float(), Bonus::CREATURE_DAMAGE, 1);
-	cre->addBonus(node["damage"]["max"].Float(), Bonus::CREATURE_DAMAGE, 2);
-
-	assert(node["damage"]["min"].Float() <= node["damage"]["max"].Float());
-
-	cre->ammMin = node["advMapAmount"]["min"].Float();
-	cre->ammMax = node["advMapAmount"]["max"].Float();
-	assert(cre->ammMin <= cre->ammMax);
-
-	if (!node["shots"].isNull())
-		cre->addBonus(node["shots"].Float(), Bonus::SHOTS);
-
-	if (node["spellPoints"].isNull())
-		cre->addBonus(node["spellPoints"].Float(), Bonus::CASTS);
-
-	cre->doubleWide = node["doubleWide"].Bool();
-
-	loadStackExperience(cre, node["stackExperience"]);
-	loadJsonAnimation(cre, node["graphics"]);
-	loadCreatureJson(cre, node);
-	return cre;
 }
 
 void CCreatureHandler::loadJsonAnimation(CCreature * cre, const JsonNode & graphics)
@@ -1187,58 +1153,8 @@ int CCreatureHandler::stringToNumber(std::string & s)
 
 CCreatureHandler::~CCreatureHandler()
 {
-	for(auto & creature : creatures)
-		creature.dellNull();
-
 	for(auto & p : skillRequirements)
 		p.first = nullptr;
-}
-
-const Entity * CCreatureHandler::getBaseByIndex(const int32_t index) const
-{
-	return getByIndex(index);
-}
-
-const Creature * CCreatureHandler::getById(const CreatureID & id) const
-{
-	return getByIndex(id);
-}
-
-const Creature * CCreatureHandler::getByIndex(const int32_t index) const
-{
-	if(index < 0 || index >= creatures.size())
-	{
-		logGlobal->error("Unable to get creature with ID %d", index);
-		return nullptr;
-	}
-	else
-	{
-		return creatures.at(index).get();
-	}
-}
-
-void CCreatureHandler::forEachBase(const std::function<void(const Entity * entity, bool & stop)>& cb) const
-{
-	bool stop = false;
-
-	for(auto & object : creatures)
-	{
-		cb(object.get(), stop);
-		if(stop)
-			break;
-	}
-}
-
-void CCreatureHandler::forEach(const std::function<void(const Creature * entity, bool & stop)>& cb) const
-{
-	bool stop = false;
-
-	for(auto & object : creatures)
-	{
-		cb(object.get(), stop);
-		if(stop)
-			break;
-	}
 }
 
 CreatureID CCreatureHandler::pickRandomMonster(CRandomGenerator & rand, int tier) const
@@ -1248,8 +1164,8 @@ CreatureID CCreatureHandler::pickRandomMonster(CRandomGenerator & rand, int tier
 	{
 		do
 		{
-			r = (*RandomGeneratorUtil::nextItem(creatures, rand))->idNumber;
-		} while (VLC->creh->creatures[r] && VLC->creh->creatures[r]->special); // find first "not special" creature
+			r = (*RandomGeneratorUtil::nextItem(objects, rand))->idNumber;
+		} while (objects[r] && objects[r]->special); // find first "not special" creature
 	}
 	else
 	{
@@ -1288,7 +1204,7 @@ void CCreatureHandler::addBonusForAllCreatures(std::shared_ptr<Bonus> b)
 
 void CCreatureHandler::buildBonusTreeForTiers()
 {
-	for(CCreature *c : creatures)
+	for(CCreature * c : objects)
 	{
 		if(vstd::isbetween(c->level, 0, ARRAY_COUNT(creaturesOfLevel)))
 			c->attachTo(&creaturesOfLevel[c->level]);

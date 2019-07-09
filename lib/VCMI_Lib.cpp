@@ -110,6 +110,11 @@ spells::effects::Registry * LibClasses::spellEffects()
 	return spells::effects::GlobalRegistry::get();
 }
 
+void LibClasses::updateEntity(Metatype metatype, int32_t index, const JsonNode & data)
+{
+	//TODO: LibClasses::updateEntity
+}
+
 void LibClasses::loadFilesystem(bool onlyEssential)
 {
 	CStopWatch totalTime;
@@ -133,7 +138,7 @@ void LibClasses::loadFilesystem(bool onlyEssential)
 
 static void logHandlerLoaded(const std::string & name, CStopWatch & timer)
 {
-   logGlobal->info("\t\t %s handler: %d ms", name, timer.getDiff());
+	logGlobal->info("\t\t %s handler: %d ms", name, timer.getDiff());
 }
 
 template <class Handler> void createHandler(Handler *&handler, const std::string &name, CStopWatch &timer)
