@@ -791,7 +791,7 @@ void CGameState::init(const IMapService * mapService, StartInfo * si, bool allow
 
 void CGameState::updateEntity(Metatype metatype, int32_t index, const JsonNode & data)
 {
-
+	services->updateEntity(metatype, index, data);
 }
 
 void CGameState::updateOnLoad(StartInfo * si)

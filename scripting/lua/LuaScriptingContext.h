@@ -28,6 +28,7 @@ public:
 	virtual ~LuaContext();
 
 	void run(const JsonNode & initialState) override;
+	void run(ServerCallback * server, const JsonNode & initialState) override;
 
 	//log error and return nil from LuaCFunction
 	int errorRetVoid(const std::string & message);
@@ -79,10 +80,14 @@ private:
 	//print global function
 	static int print(lua_State * L);
 
+	static int logError(lua_State * L);
+
 	//require function implementation
 	int loadModule();
 
 	int printImpl();
+
+	int logErrorImpl();
 
 };
 

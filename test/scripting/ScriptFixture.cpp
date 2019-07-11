@@ -53,11 +53,17 @@ void ScriptFixture::setUp()
 	EXPECT_CALL(environmentMock, game()).WillRepeatedly(Return(&infoMock));
 	EXPECT_CALL(environmentMock, logger()).WillRepeatedly(Return(&loggerMock));
 	EXPECT_CALL(environmentMock, eventBus()).WillRepeatedly(Return(&eventBus));
+	EXPECT_CALL(environmentMock, services()).WillRepeatedly(Return(&servicesMock));
 }
 
 void ScriptFixture::run(const JsonNode & scriptState)
 {
 	context->run(scriptState);
+}
+
+void ScriptFixture::runServer(const JsonNode & scriptState)
+{
+	context->run(&serverMock, scriptState);
 }
 
 JsonNode ScriptFixture::runScript(ModulePtr module, const std::string & scriptSource, const JsonNode & scriptState)

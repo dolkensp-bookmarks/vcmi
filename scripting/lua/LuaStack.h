@@ -30,6 +30,7 @@ public:
 	void pushNil();
 	void pushInteger(lua_Integer value);
 	void push(bool value);
+	void push(const char * value);
 	void push(const std::string & value);
 
 	template<typename T>

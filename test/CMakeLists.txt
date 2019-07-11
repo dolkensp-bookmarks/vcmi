@@ -47,12 +47,13 @@ set(test_SRCS
 		map/MapComparer.cpp
 
 		netpacks/EntitiesChangedTest.cpp
-		netpacks/NetpackFixture.cpp
+		netpacks/NetPackFixture.cpp
 
-		scripting/ScriptFixture.cpp
+		scripting/LuaSandboxTest.cpp
 		scripting/LuaSpellEffectTest.cpp
 		scripting/LuaSpellEffectAPITest.cpp
 		scripting/PoolTest.cpp
+		scripting/ScriptFixture.cpp
 
 		spells/AbilityCasterTest.cpp
 		spells/CSpellTest.cpp
@@ -103,7 +104,7 @@ set(test_HEADERS
 
  		map/MapComparer.h
 
- 		netpacks/NetpackFixture.h
+ 		netpacks/NetPackFixture.h
 
 		spells/effects/EffectFixture.h
 

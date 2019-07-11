@@ -33,19 +33,22 @@ LuaContext::LuaContext(const Script * source, const Environment * env_)
 {
 	L = luaL_newstate();
 
-	luaopen_base(L);
-	popAll();
+	static const std::vector<luaL_Reg> STD_LIBS =
+	{
+	  { "",	luaopen_base },
+	  { LUA_TABLIBNAME, luaopen_table },
+	  { LUA_STRLIBNAME, luaopen_string },
+	  { LUA_MATHLIBNAME, luaopen_math },
+	  { LUA_BITLIBNAME, luaopen_bit }
+	};
 
-	luaopen_math(L);
-	popAll();
+	for(const luaL_Reg & lib : STD_LIBS)
+	{
+		lua_pushcfunction(L, lib.func);
+		lua_pushstring(L, lib.name);
+		lua_call(L, 1, 0);
+	}
 
-	luaopen_string(L);
-	popAll();
-
-	luaopen_table(L);
-	popAll();
-
-	luaopen_bit(L);
 	popAll();
 
 	cleanupGlobals();
@@ -68,6 +71,10 @@ LuaContext::LuaContext(const Script * source, const Environment * env_)
 
 	S.push(env->eventBus());
 	lua_setglobal(L, "EVENT_BUS");
+
+	S.push(env->services());
+	lua_setglobal(L, "SERVICES");
+
 	popAll();
 
 	lua_newtable(L);
@@ -84,30 +91,65 @@ LuaContext::~LuaContext()
 
 void LuaContext::cleanupGlobals()
 {
-	lua_pushnil(L);
+	LuaStack S(L);
+	S.clear();
+	S.pushNil();
 	lua_setglobal(L, "collectgarbage");
 
-	lua_pushnil(L);
+	S.pushNil();
 	lua_setglobal(L, "dofile");
 
-	lua_pushnil(L);
+	S.pushNil();
 	lua_setglobal(L, "load");
 
-	lua_pushnil(L);
+	S.pushNil();
 	lua_setglobal(L, "loadfile");
 
-	lua_pushnil(L);
+	S.pushNil();
 	lua_setglobal(L, "loadstring");
 
-	lua_pushnil(L);
+	S.pushNil();
 	lua_setglobal(L, "print");
 
-	//TODO:
-	//string.dump
+	S.clear();
 
-	//math.random
+	lua_getglobal(L, LUA_STRLIBNAME);
 
-	//math.randomseed
+	S.push("dump");
+	S.pushNil();
+	lua_rawset(L, -3);
+	S.clear();
+
+	lua_getglobal(L, LUA_MATHLIBNAME);
+
+	S.push("random");
+	S.pushNil();
+	lua_rawset(L, -3);
+
+
+	S.push("randomseed");
+	S.pushNil();
+	lua_rawset(L, -3);
+	S.clear();
+}
+
+void LuaContext::run(ServerCallback * server, const JsonNode & initialState)
+{
+	{
+		LuaStack S(L);
+		S.push(server);
+		lua_setglobal(L, "SERVER");
+		S.clear();
+	}
+
+	run(initialState);
+
+	{
+		LuaStack S(L);
+		S.pushNil();
+		lua_setglobal(L, "SERVER");
+		S.clear();
+	}
 }
 
 void LuaContext::run(const JsonNode & initialState)
@@ -430,6 +472,11 @@ void LuaContext::registerCore()
 	push(&LuaContext::require, this);
 	lua_setglobal(L, "require");
 
+	push(&LuaContext::logError, this);
+	lua_setglobal(L, "logError");
+
+	popAll();//just in case
+
 	for(auto & registar : api::Registry::get()->getCoreData())
 	{
 		registar->perform(L, api::TypeRegistry::get());
@@ -566,6 +613,32 @@ int LuaContext::printImpl()
 {
 	//TODO:
 	return 0;
+}
+
+int LuaContext::logError(lua_State * L)
+{
+	LuaContext * self = static_cast<LuaContext *>(lua_touserdata(L, lua_upvalueindex(1)));
+
+	if(!self)
+	{
+		lua_pushstring(L, "internal error");
+		lua_error(L);
+		return 0;
+	}
+
+	return self->logErrorImpl();
+}
+
+int LuaContext::logErrorImpl()
+{
+	LuaStack S(L);
+
+	std::string message;
+
+	if(S.tryGet(1, message))
+		logger->error(message);
+
+	return S.retVoid();
 }
 
 

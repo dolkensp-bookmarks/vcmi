@@ -61,6 +61,11 @@ void LuaStack::push(bool value)
 	lua_pushboolean(L, value);
 }
 
+void LuaStack::push(const char * value)
+{
+	lua_pushstring(L, value);
+}
+
 void LuaStack::push(const std::string & value)
 {
 	lua_pushlstring(L, value.c_str(), value.size());

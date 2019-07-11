@@ -66,6 +66,102 @@ const std::string & CCreature::getSingularName() const
 	return nameSing;
 }
 
+int32_t CCreature::getAdvMapAmountMin() const
+{
+	return ammMin;
+}
+
+int32_t CCreature::getAdvMapAmountMax() const
+{
+	return ammMax;
+}
+
+int32_t CCreature::getAIValue() const
+{
+	return AIValue;
+}
+
+int32_t CCreature::getFightValue() const
+{
+	return fightValue;
+}
+
+int32_t CCreature::getLevel() const
+{
+	return level;
+}
+
+int32_t CCreature::getGrowth() const
+{
+	return growth;
+}
+
+int32_t CCreature::getHorde() const
+{
+	return hordeGrowth;
+}
+
+int32_t CCreature::getFactionIndex() const
+{
+	return faction;
+}
+
+int32_t CCreature::getBaseAttack() const
+{
+	static const auto SELECTOR = Selector::typeSubtype(Bonus::PRIMARY_SKILL, PrimarySkill::ATTACK).And(Selector::sourceTypeSel(Bonus::CREATURE_ABILITY));
+	return getExportedBonusList().valOfBonuses(SELECTOR);
+}
+
+int32_t CCreature::getBaseDefense() const
+{
+	static const auto SELECTOR = Selector::typeSubtype(Bonus::PRIMARY_SKILL, PrimarySkill::DEFENSE).And(Selector::sourceTypeSel(Bonus::CREATURE_ABILITY));
+	return getExportedBonusList().valOfBonuses(SELECTOR);
+}
+
+int32_t CCreature::getBaseDamageMin() const
+{
+	static const auto SELECTOR = Selector::typeSubtype(Bonus::CREATURE_DAMAGE, 1).And(Selector::sourceTypeSel(Bonus::CREATURE_ABILITY));
+	return getExportedBonusList().valOfBonuses(SELECTOR);
+}
+
+int32_t CCreature::getBaseDamageMax() const
+{
+	static const auto SELECTOR = Selector::typeSubtype(Bonus::CREATURE_DAMAGE, 2).And(Selector::sourceTypeSel(Bonus::CREATURE_ABILITY));
+	return getExportedBonusList().valOfBonuses(SELECTOR);
+}
+
+int32_t CCreature::getBaseHitPoints() const
+{
+	static const auto SELECTOR = Selector::type(Bonus::STACK_HEALTH).And(Selector::sourceTypeSel(Bonus::CREATURE_ABILITY));
+	return getExportedBonusList().valOfBonuses(SELECTOR);
+}
+
+int32_t CCreature::getBaseSpellPoints() const
+{
+	static const auto SELECTOR = Selector::type(Bonus::CASTS).And(Selector::sourceTypeSel(Bonus::CREATURE_ABILITY));
+	return getExportedBonusList().valOfBonuses(SELECTOR);
+}
+
+int32_t CCreature::getBaseSpeed() const
+{
+	static const auto SELECTOR = Selector::type(Bonus::STACKS_SPEED).And(Selector::sourceTypeSel(Bonus::CREATURE_ABILITY));
+	return getExportedBonusList().valOfBonuses(SELECTOR);
+}
+
+int32_t CCreature::getBaseShots() const
+{
+	static const auto SELECTOR = Selector::type(Bonus::SHOTS).And(Selector::sourceTypeSel(Bonus::CREATURE_ABILITY));
+	return getExportedBonusList().valOfBonuses(SELECTOR);
+}
+
+int32_t CCreature::getCost(int32_t resIndex) const
+{
+	if(resIndex >= 0 && resIndex < cost.size())
+		return cost[resIndex];
+	else
+		return 0;
+}
+
 int CCreature::getQuantityID(const int & quantity)
 {
 	if (quantity<5)
@@ -103,21 +199,6 @@ int CCreature::estimateCreatureCount(ui32 countID)
 bool CCreature::isDoubleWide() const
 {
 	return doubleWide;
-}
-
-bool CCreature::isFlying() const
-{
-	return hasBonusOfType(Bonus::FLYING);
-}
-
-bool CCreature::isShooting() const
-{
-	return hasBonusOfType(Bonus::SHOOTER);
-}
-
-bool CCreature::isUndead() const
-{
-	return hasBonusOfType(Bonus::UNDEAD);
 }
 
 /**

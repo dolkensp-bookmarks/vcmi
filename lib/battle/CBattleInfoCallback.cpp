@@ -1250,7 +1250,6 @@ std::pair<const battle::Unit *, BattleHex> CBattleInfoCallback::getNearestStack(
 BattleHex CBattleInfoCallback::getAvaliableHex(CreatureID creID, ui8 side, int initialPos) const
 {
 	bool twoHex = VLC->creh->objects[creID]->isDoubleWide();
-	//bool flying = VLC->creh->objects[creID]->isFlying();
 
 	int pos;
 	if (initialPos > -1)

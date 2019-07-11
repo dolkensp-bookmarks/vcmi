@@ -127,11 +127,29 @@ public:
 	const std::string & getSingularName() const override;
 	uint32_t getMaxHealth() const override;
 
+	int32_t getAdvMapAmountMin() const override;
+	int32_t getAdvMapAmountMax() const override;
+	int32_t getAIValue() const override;
+	int32_t getFightValue() const override;
+	int32_t getLevel() const override;
+	int32_t getGrowth() const override;
+	int32_t getHorde() const override;
+	int32_t getFactionIndex() const override;
+
+	int32_t getBaseAttack() const override;
+	int32_t getBaseDefense() const override;
+	int32_t getBaseDamageMin() const override;
+	int32_t getBaseDamageMax() const override;
+	int32_t getBaseHitPoints() const override;
+	int32_t getBaseSpellPoints() const override;
+	int32_t getBaseSpeed() const override;
+	int32_t getBaseShots() const override;
+
+	int32_t getCost(int32_t resIndex) const override;
+
 	bool isItNativeTerrain(int terrain) const;
-	bool isDoubleWide() const; //returns true if unit is double wide on battlefield
-	bool isFlying() const; //returns true if it is a flying unit
-	bool isShooting() const; //returns true if unit can shoot
-	bool isUndead() const; //returns true if unit is undead
+	bool isDoubleWide() const override; //returns true if unit is double wide on battlefield
+
 	bool isGood () const;
 	bool isEvil () const;
 	si32 maxAmount(const std::vector<si32> &res) const; //how many creatures can be bought

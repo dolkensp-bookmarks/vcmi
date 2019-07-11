@@ -16,14 +16,14 @@
 #define VCMI_REGISTER_SCRIPT_API(Type, Name) \
 namespace\
 {\
-RegisterAPI<Type> _register(Name);\
+RegisterAPI<Type> _register ## Type (Name);\
 }\
 \
 
 #define VCMI_REGISTER_CORE_SCRIPT_API(Type) \
 namespace\
 {\
-RegisterCoreAPI<Type> _register;\
+RegisterCoreAPI<Type> _register ## Type;\
 }\
 \
 

@@ -1,6 +1,3 @@
---local TriggerBase = require("core:erm.TriggerBase")
---local ReceiverBase = require("core:erm.ReceiverBase")
-
 DATA = DATA or {}
 
 local ERM = {}
@@ -20,9 +17,6 @@ DATA.ERM.flag = DATA.ERM.flag or {}
 DATA.ERM.quick = DATA.ERM.quick or {}
 DATA.ERM.v = DATA.ERM.v or {}
 DATA.ERM.z = DATA.ERM.z or {}
-
---TriggerBase.ERM = ERM
---ReceiverBase.ERM = ERM
 
 local y = {}
 
@@ -46,6 +40,7 @@ end
 ERM.BM = createReceiverLoader("BM")
 ERM.BU = createReceiverLoader("BU")
 ERM.IF = createReceiverLoader("IF")
+ERM.MA = createReceiverLoader("MA")
 ERM.MF = createReceiverLoader("MF")
 
 local Triggers = {}

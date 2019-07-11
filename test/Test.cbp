@@ -156,6 +156,7 @@
 		<Unit filename="netpacks/NetPackFixture.cpp" />
 		<Unit filename="netpacks/NetPackFixture.h" />
 		<Unit filename="rmg/CRmgTemplateTest.cpp" />
+		<Unit filename="scripting/LuaSandboxTest.cpp" />
 		<Unit filename="scripting/LuaSpellEffectAPITest.cpp" />
 		<Unit filename="scripting/LuaSpellEffectTest.cpp" />
 		<Unit filename="scripting/PoolTest.cpp" />
@@ -202,6 +203,7 @@
 		<Unit filename="testdata/TerrainTest/underground_terrain.json" />
 		<Unit filename="testdata/erm/std.verm" />
 		<Unit filename="testdata/erm/testy.erm" />
+		<Unit filename="testdata/lua/SandboxTest.lua" />
 		<Unit filename="testdata/lua/SpellEffectAPIMoveUnit.lua" />
 		<Unit filename="testdata/lua/SpellEffectAPITest.lua" />
 		<Unit filename="testdata/rmg/1.json" />

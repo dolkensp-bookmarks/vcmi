@@ -763,7 +763,8 @@ public:
 	void exportBonuses();
 
 	const BonusList &getBonusList() const;
-	BonusList &getExportedBonusList();
+	BonusList & getExportedBonusList();
+	const BonusList & getExportedBonusList() const;
 	CBonusSystemNode::ENodeTypes getNodeType() const;
 	void setNodeType(CBonusSystemNode::ENodeTypes type);
 	const TNodesVector &getParentNodes() const;
