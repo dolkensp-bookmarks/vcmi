@@ -108,7 +108,7 @@ size_t OptionsTab::CPlayerSettingsHelper::getImageIndex()
 		{
 			if(settings.heroPortrait >= 0)
 				return settings.heroPortrait;
-			return CGI->heroh->objects[settings.hero]->imageIndex;
+			return (*CGI->heroh)[settings.hero]->imageIndex;
 		}
 		}
 
@@ -194,7 +194,7 @@ std::string OptionsTab::CPlayerSettingsHelper::getName()
 		{
 			if(!settings.heroName.empty())
 				return settings.heroName;
-			return CGI->heroh->objects[settings.hero]->name;
+			return (*CGI->heroh)[settings.hero]->name;
 		}
 		}
 	}
@@ -247,7 +247,7 @@ std::string OptionsTab::CPlayerSettingsHelper::getSubtitle()
 	case HERO:
 	{
 		if(settings.hero >= 0)
-			return getName() + " - " + CGI->heroh->objects[settings.hero]->heroClass->name;
+			return getName() + " - " + (*CGI->heroh)[settings.hero]->heroClass->name;
 		return getName();
 	}
 
@@ -383,8 +383,8 @@ void OptionsTab::CPlayerOptionTooltipBox::genHeroWindow()
 	genHeader();
 	labelHeroSpeciality = std::make_shared<CLabel>(pos.w / 2 + 4, 117, FONT_MEDIUM, CENTER, Colors::YELLOW, CGI->generaltexth->allTexts[78]);
 
-	imageSpeciality = std::make_shared<CAnimImage>("UN44", CGI->heroh->objects[settings.hero]->imageIndex, 0, pos.w / 2 - 22, 134);
-	labelSpecialityName = std::make_shared<CLabel>(pos.w / 2, 188, FONT_SMALL, CENTER, Colors::WHITE, CGI->heroh->objects[settings.hero]->specName);
+	imageSpeciality = std::make_shared<CAnimImage>("UN44", (*CGI->heroh)[settings.hero]->imageIndex, 0, pos.w / 2 - 22, 134);
+	labelSpecialityName = std::make_shared<CLabel>(pos.w / 2, 188, FONT_SMALL, CENTER, Colors::WHITE, (*CGI->heroh)[settings.hero]->specName);
 }
 
 void OptionsTab::CPlayerOptionTooltipBox::genBonusWindow()

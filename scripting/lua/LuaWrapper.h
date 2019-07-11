@@ -85,7 +85,7 @@ template<class T, class Proxy = T> class OpaqueWrapper
 public:
 	using ObjectType = typename std::remove_cv<T>::type;
 	using UDataType = T *;
-    using SelfType = OpaqueWrapper<T, Proxy>;
+	using SelfType = OpaqueWrapper<T, Proxy>;
 	using RegType = detail::RegType<UDataType>;
 
 	static int registrator(lua_State * L, api::TypeRegistry * typeRegistry)
@@ -108,7 +108,7 @@ template<class T, class Proxy = T> class OpaqueWrapperEx
 public:
 	using ObjectType = typename std::remove_cv<T>::type;
 	using UDataType = T *;
-    using SelfType = OpaqueWrapper<T, Proxy>;
+	using SelfType = OpaqueWrapper<T, Proxy>;
 	using RegType = detail::RegType<UDataType>;
 	using CustomRegType = detail::CustomRegType;
 

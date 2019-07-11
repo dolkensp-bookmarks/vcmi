@@ -382,7 +382,7 @@ namespace ERM
 			body %= qi::lit(":") >> *(bodyOption) > qi::lit(";");
 
 			instruction %= cmdName >> -identifier >> -condition >> body;
-			receiver %= cmdName >> -identifier >> -condition >> body; //receiver without body exists... change needed
+			receiver %= cmdName >> -identifier >> -condition >> body;
 			postTrigger %= cmdName >> -identifier >> -condition > qi::lit(";");
 
 			command %= (qi::lit("!") >>

@@ -35,11 +35,11 @@ LuaContext::LuaContext(const Script * source, const Environment * env_)
 
 	static const std::vector<luaL_Reg> STD_LIBS =
 	{
-	  { "",	luaopen_base },
-	  { LUA_TABLIBNAME, luaopen_table },
-	  { LUA_STRLIBNAME, luaopen_string },
-	  { LUA_MATHLIBNAME, luaopen_math },
-	  { LUA_BITLIBNAME, luaopen_bit }
+		{"", luaopen_base},
+		{LUA_TABLIBNAME, luaopen_table},
+		{LUA_STRLIBNAME, luaopen_string},
+		{LUA_MATHLIBNAME, luaopen_math},
+		{LUA_BITLIBNAME, luaopen_bit}
 	};
 
 	for(const luaL_Reg & lib : STD_LIBS)
@@ -363,7 +363,7 @@ void LuaContext::push(const JsonNode & value)
 	case JsonNode::JsonType::DATA_VECTOR:
 		{
 			lua_newtable(L);
-            for(int idx = 0; idx < value.Vector().size(); idx++)
+			for(int idx = 0; idx < value.Vector().size(); idx++)
 			{
 				lua_pushinteger(L, idx + 1);
 				push(value.Vector()[idx]);

@@ -220,6 +220,8 @@ set(lib_HEADERS
 		battle/SiegeInfo.h
 		battle/Unit.h
 
+		events/ApplyDamage.h
+
 		filesystem/AdapterLoaders.h
 		filesystem/CArchiveLoader.h
 		filesystem/CBinaryReader.h

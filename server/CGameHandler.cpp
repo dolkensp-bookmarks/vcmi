@@ -1067,7 +1067,7 @@ void CGameHandler::makeAttack(const CStack * attacker, const CStack * defender, 
 
 		//TODO: should spell override creature`s projectile?
 
-        auto spell = bat.spellID.toSpell();
+		auto spell = bat.spellID.toSpell();
 
 		battle::Target target;
 		target.emplace_back(defender);

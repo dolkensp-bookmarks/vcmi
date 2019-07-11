@@ -743,7 +743,7 @@ bool CGHeroInstance::canCastThisSpell(const spells::Spell * spell) const
 	{
 		if(inSpellBook)
 		{//hero has this spell in spellbook
-			logGlobal->error("Special spell %s in spellbook.", spell->getLevel());
+			logGlobal->error("Special spell %s in spellbook.", spell->getName());
 		}
 		return specificBonus;
 	}

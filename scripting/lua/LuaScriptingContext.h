@@ -58,8 +58,6 @@ public:
 
 	std::string toStringRaw(int index);
 
-protected:
-
 private:
 	lua_State * L;
 
@@ -88,9 +86,6 @@ private:
 	int printImpl();
 
 	int logErrorImpl();
-
 };
-
-
 
 }

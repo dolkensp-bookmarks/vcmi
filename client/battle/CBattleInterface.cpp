@@ -1744,16 +1744,16 @@ std::vector<PossiblePlayerBattleAction> CBattleInterface::getPossibleActionsForS
 	auto allActions = curInt->cb->getClientActionsForStack(stack, data);
 
 	return std::vector<PossiblePlayerBattleAction>(allActions);
-	}
+}
 
 void CBattleInterface::reorderPossibleActionsPriority(const CStack * stack, MouseHoveredHexContext context)
-	{
+{
 	if(tacticsMode || possibleActions.empty()) return; //this function is not supposed to be called in tactics mode or before getPossibleActionsForStack
 
 	auto assignPriority = [&](PossiblePlayerBattleAction const & item) -> uint8_t //large lambda assigning priority which would have to be part of possibleActions without it
-		{
+	{
 		switch(item)
-			{
+		{
 		case PossiblePlayerBattleAction::AIMED_SPELL_CREATURE:
 		case PossiblePlayerBattleAction::ANY_LOCATION:
 		case PossiblePlayerBattleAction::NO_LOCATION:
@@ -1784,7 +1784,7 @@ void CBattleInterface::reorderPossibleActionsPriority(const CStack * stack, Mous
 			return 10; break;
 		default:
 			return 200; break;
-				}
+		}
 	};
 
 	auto comparer = [&](PossiblePlayerBattleAction const & lhs, PossiblePlayerBattleAction const & rhs)
@@ -1793,7 +1793,7 @@ void CBattleInterface::reorderPossibleActionsPriority(const CStack * stack, Mous
 	};
 
 	std::make_heap(possibleActions.begin(), possibleActions.end(), comparer);
-	}
+}
 
 void CBattleInterface::endAction(const BattleAction* action)
 {
