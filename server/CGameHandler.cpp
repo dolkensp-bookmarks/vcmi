@@ -1121,7 +1121,15 @@ void CGameHandler::makeAttack(const CStack * attacker, const CStack * defender, 
 			totalKills += bsa.killedAmount;
 		}
 
-		addGenericDamageLog(blm, attacker, defender, totalDamage, totalKills, multipleTargets);
+		{
+			MetaString text;
+			attacker->addText(text, MetaString::GENERAL_TXT, 376);
+			attacker->addNameReplacement(text);
+			text.addReplacement(totalDamage);
+			blm.lines.push_back(text);
+		}
+
+		addGenericKilledLog(blm, defender, totalKills, multipleTargets);
 	}
 	sendAndApply(&blm);
 
@@ -1163,7 +1171,7 @@ void CGameHandler::makeAttack(const CStack * attacker, const CStack * defender, 
 		StacksInjured pack;
 		pack.stacks.push_back(bsa);
 		sendAndApply(&pack);
-		sendGenericDamageLog(attacker, bsa.killedAmount, false);
+		sendGenericKilledLog(attacker, bsa.killedAmount, false);
 	}
 
 	handleAfterAttackCasting(ranged, attacker, defender);
@@ -1254,60 +1262,41 @@ void CGameHandler::applyBattleEffects(BattleAttack & bat, BattleLogMessage & blm
 	}
 }
 
-void CGameHandler::sendGenericDamageLog(const CStack * defender, int32_t killed, bool multiple)
+void CGameHandler::sendGenericKilledLog(const CStack * defender, int32_t killed, bool multiple)
 {
 	if(killed > 0)
 	{
-		boost::format txt;
-		if(killed > 1)
-		{
-			txt = boost::format(VLC->generaltexth->allTexts[379]) % killed % (multiple ? VLC->generaltexth->allTexts[43] : defender->getCreature()->namePl); // creatures perish
-		}
-		else //killed == 1
-		{
-			txt = boost::format(VLC->generaltexth->allTexts[378]) % (multiple ? VLC->generaltexth->allTexts[42] : defender->getCreature()->nameSing); // creature perishes
-		}
-		std::string trimmed = boost::to_string(txt);
-		boost::algorithm::trim(trimmed); // these default h3 texts have unnecessary new lines, so get rid of them before displaying
-
-		MetaString line;
-		line.addReplacement(trimmed);
 		BattleLogMessage blm;
-		blm.lines.push_back(line);
+		addGenericKilledLog(blm, defender, killed, multiple);
 		sendAndApply(&blm);
 	}
 }
 
-void CGameHandler::addGenericDamageLog(BattleLogMessage & blm, const battle::Unit * attacker, const CStack * defender, int64_t dmg, int32_t killed, bool multiple)
+void CGameHandler::addGenericKilledLog(BattleLogMessage & blm, const CStack * defender, int32_t killed, bool multiple)
 {
-	std::string formattedText;
-
-	MetaString text;
-	attacker->addText(text, MetaString::GENERAL_TXT, 376);
-	attacker->addNameReplacement(text);
-	text.addReplacement(dmg);
-
 	if(killed > 0)
 	{
-		std::string formattedText = " ";
+		const int32_t txtIndex = (killed > 1) ? 379 : 378;
+		std::string formatString = VLC->generaltexth->allTexts.at(txtIndex);
 
-		boost::format txt;
+		// these default h3 texts have unnecessary new lines, so get rid of them before displaying (and trim just in case, trimming newlines does not works for some reason)
+		formatString.erase(std::remove(formatString.begin(), formatString.end(), '\n'), formatString.end());
+		formatString.erase(std::remove(formatString.begin(), formatString.end(), '\r'), formatString.end());
+		boost::algorithm::trim(formatString);
+
+		boost::format txt(formatString);
 		if(killed > 1)
 		{
-			txt = boost::format(VLC->generaltexth->allTexts[379]) % killed % (multiple ? VLC->generaltexth->allTexts[43] : defender->getCreature()->namePl); // creatures perish
+			txt % killed % (multiple ? VLC->generaltexth->allTexts[43] : defender->getCreature()->namePl); // creatures perish
 		}
 		else //killed == 1
 		{
-			txt = boost::format(VLC->generaltexth->allTexts[378]) % (multiple ? VLC->generaltexth->allTexts[42] : defender->getCreature()->nameSing); // creature perishes
+			txt % (multiple ? VLC->generaltexth->allTexts[42] : defender->getCreature()->nameSing); // creature perishes
 		}
-		std::string trimmed = boost::to_string(txt);
-		boost::algorithm::trim(trimmed); // these default h3 texts have unnecessary new lines, so get rid of them before displaying
-		formattedText.append(trimmed);
+		MetaString line;
+		line.addReplacement(txt.str());
+		blm.lines.push_back(line);
 	}
-
-	text.addReplacement(formattedText);
-	blm.lines.push_back(text);
-	sendAndApply(&blm);
 }
 
 void CGameHandler::handleClientDisconnection(std::shared_ptr<CConnection> c)
@@ -5007,7 +4996,7 @@ bool CGameHandler::handleDamageFromObstacle(const CStack * curStack, bool stackI
 				StacksInjured si;
 				si.stacks.push_back(bsa);
 				sendAndApply(&si);
-				sendGenericDamageLog(curStack, bsa.killedAmount, false);
+				sendGenericKilledLog(curStack, bsa.killedAmount, false);
 			}
 		}
 
@@ -5739,7 +5728,7 @@ void CGameHandler::handleAfterAttackCasting(bool ranged, const CStack * attacker
 		si.stacks.push_back(bsa);
 
 		sendAndApply(&si);
-		sendGenericDamageLog(defender, bsa.killedAmount, false);
+		sendGenericKilledLog(defender, bsa.killedAmount, false);
 	}
 }
 

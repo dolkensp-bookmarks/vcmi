@@ -75,7 +75,7 @@ TEST_F(ExamplesTest, TESTY_ERM)
 	JsonNode expected;
 
 	JsonComparer c(false);
-	c.compare("!!FU42 ret", ret, expected);
+	c.compare("!?FU42 ret", ret, expected);
 
 	std::vector<std::string> expectedTexts =
 	{
