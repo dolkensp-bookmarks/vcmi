@@ -184,7 +184,7 @@ public:
 	PlayerRelations::PlayerRelations getPlayerRelations(PlayerColor color1, PlayerColor color2);
 	bool checkForVisitableDir(const int3 & src, const int3 & dst) const; //check if src tile is visitable from dst tile
 	void calculatePaths(const CGHeroInstance *hero, CPathsInfo &out); //calculates possible paths for hero, by default uses current hero position and movement left; returns pointer to newly allocated CPath or nullptr if path does not exists
-	void calculatePaths(std::shared_ptr<PathfinderConfig> config, const CGHeroInstance * hero);
+	void calculatePaths(std::shared_ptr<PathfinderConfig> config, const CGHeroInstance * hero) override;
 	int3 guardingCreaturePosition (int3 pos) const;
 	std::vector<CGObjectInstance*> guardingCreatures (int3 pos) const;
 	void updateRumor();
@@ -202,7 +202,7 @@ public:
 	bool isVisible(int3 pos, PlayerColor player);
 	bool isVisible(const CGObjectInstance *obj, boost::optional<PlayerColor> player);
 
-	int getDate(Date::EDateType mode=Date::DAY) const; //mode=0 - total days in game, mode=1 - day of week, mode=2 - current week, mode=3 - current month
+	int getDate(Date::EDateType mode=Date::DAY) const override; //mode=0 - total days in game, mode=1 - day of week, mode=2 - current week, mode=3 - current month
 
 	// ----- getters, setters -----
 

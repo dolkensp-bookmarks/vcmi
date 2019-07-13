@@ -365,5 +365,5 @@ public:
 
 protected:
 	const std::vector<std::string> & getTypeNames() const override;
-	CFaction * loadFromJson(const std::string & scope, const JsonNode & data, const std::string & identifier, size_t index);
+	CFaction * loadFromJson(const std::string & scope, const JsonNode & data, const std::string & identifier, size_t index) override;
 };
