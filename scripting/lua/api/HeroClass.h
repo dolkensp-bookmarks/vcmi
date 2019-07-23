@@ -14,17 +14,17 @@
 
 #include "../LuaWrapper.h"
 
-
-//class DLL_LINKAGE HeroClass : public EntityT<HeroClassID>
-//{
-//public:
-//
-//};
-
 namespace scripting
 {
 namespace api
 {
+
+class HeroClassProxy : public OpaqueWrapper<const HeroClass, HeroClassProxy>
+{
+public:
+	using Wrapper = OpaqueWrapper<const HeroClass, HeroClassProxy>;
+	static const std::vector<typename Wrapper::RegType> REGISTER;
+};
 
 
 }

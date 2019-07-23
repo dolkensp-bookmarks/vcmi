@@ -21,6 +21,17 @@ namespace scripting
 namespace api
 {
 
+VCMI_REGISTER_CORE_SCRIPT_API(FactionProxy);
+
+const std::vector<FactionProxy::RegType> FactionProxy::REGISTER =
+{
+	{"getIconIndex", LuaCallWrapper<const Entity>::createFunctor(&Entity::getIconIndex)},
+	{"getIndex", LuaCallWrapper<const Entity>::createFunctor(&Entity::getIndex)},
+	{"getJsonKey", LuaCallWrapper<const Entity>::createFunctor(&Entity::getJsonKey)},
+	{"getName", LuaCallWrapper<const Entity>::createFunctor(&Entity::getName)},
+	{"hasTown", LuaCallWrapper<const Faction>::createFunctor(&Faction::hasTown)},
+};
+
 
 }
 }

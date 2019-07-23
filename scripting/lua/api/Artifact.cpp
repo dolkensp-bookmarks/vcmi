@@ -21,6 +21,20 @@ namespace scripting
 namespace api
 {
 
+VCMI_REGISTER_CORE_SCRIPT_API(ArtifactProxy);
+
+const std::vector<ArtifactProxy::RegType> ArtifactProxy::REGISTER =
+{
+	{"getIconIndex", LuaCallWrapper<const Entity>::createFunctor(&Entity::getIconIndex)},
+	{"getIndex", LuaCallWrapper<const Entity>::createFunctor(&Entity::getIndex)},
+	{"getJsonKey", LuaCallWrapper<const Entity>::createFunctor(&Entity::getJsonKey)},
+	{"getName", LuaCallWrapper<const Entity>::createFunctor(&Entity::getName)},
+	{"getDescription", LuaCallWrapper<const Artifact>::createFunctor(&Artifact::getDescription)},
+	{"getEventText", LuaCallWrapper<const Artifact>::createFunctor(&Artifact::getEventText)},
+	{"isBig", LuaCallWrapper<const Artifact>::createFunctor(&Artifact::isBig)},
+	{"isTradable", LuaCallWrapper<const Artifact>::createFunctor(&Artifact::isTradable)},
+	{"getPrice", LuaCallWrapper<const Artifact>::createFunctor(&Artifact::getPrice)},
+};
 
 }
 }

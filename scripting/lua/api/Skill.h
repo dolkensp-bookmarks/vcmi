@@ -14,18 +14,17 @@
 
 #include "../LuaWrapper.h"
 
-
-//
-//class DLL_LINKAGE Skill : public EntityT<SecondarySkill>
-//{
-//public:
-//
-//};
-
 namespace scripting
 {
 namespace api
 {
+
+class SkillProxy : public OpaqueWrapper<const Skill, SkillProxy>
+{
+public:
+	using Wrapper = OpaqueWrapper<const Skill, SkillProxy>;
+	static const std::vector<typename Wrapper::RegType> REGISTER;
+};
 
 
 }

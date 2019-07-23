@@ -14,23 +14,18 @@
 
 #include "../LuaWrapper.h"
 
-
-//class DLL_LINKAGE Artifact : public EntityT<ArtifactID>
-//{
-//public:
-//	virtual bool isBig() const = 0;
-//	virtual bool isTradable() const = 0;
-//	virtual const std::string & getDescription() const = 0;
-//	virtual const std::string & getEventText() const = 0;
-//	virtual uint32_t getPrice() const = 0;
-//	virtual CreatureID getWarMachine() const = 0;
-//};
-
 namespace scripting
 {
 namespace api
 {
 
+class ArtifactProxy : public OpaqueWrapper<const Artifact, ArtifactProxy>
+{
+public:
+	using Wrapper = OpaqueWrapper<const Artifact, ArtifactProxy>;
+
+	static const std::vector<typename Wrapper::RegType> REGISTER;
+};
 
 }
 }

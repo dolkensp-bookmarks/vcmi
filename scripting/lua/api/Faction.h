@@ -14,18 +14,17 @@
 
 #include "../LuaWrapper.h"
 
-
-//class DLL_LINKAGE Faction : public EntityT<FactionID>
-//{
-//public:
-//	virtual bool hasTown() const = 0;
-//};
-
 namespace scripting
 {
 namespace api
 {
 
+class FactionProxy : public OpaqueWrapper<const Faction, FactionProxy>
+{
+public:
+	using Wrapper = OpaqueWrapper<const Faction, FactionProxy>;
+	static const std::vector<typename Wrapper::RegType> REGISTER;
+};
 
 }
 }

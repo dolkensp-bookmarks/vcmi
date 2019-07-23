@@ -10,21 +10,21 @@
 
 #pragma once
 
-#include <vcmi/Creature.h>
+#include <vcmi/HeroType.h>
 
 #include "../LuaWrapper.h"
-
-
-//class DLL_LINKAGE HeroType : public EntityT<HeroTypeID>
-//{
-//public:
-//
-//};
 
 namespace scripting
 {
 namespace api
 {
+
+class HeroTypeProxy : public OpaqueWrapper<const HeroType, HeroTypeProxy>
+{
+public:
+	using Wrapper = OpaqueWrapper<const HeroType, HeroTypeProxy>;
+	static const std::vector<typename Wrapper::RegType> REGISTER;
+};
 
 
 }

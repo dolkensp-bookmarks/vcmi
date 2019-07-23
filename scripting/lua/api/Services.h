@@ -31,7 +31,6 @@ class ServicesProxy : public OpaqueWrapper<const Services, ServicesProxy>
 {
 public:
 	using Wrapper = OpaqueWrapper<const Services, ServicesProxy>;
-
 	static const std::vector<typename Wrapper::RegType> REGISTER;
 };
 
