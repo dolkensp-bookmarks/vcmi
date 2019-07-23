@@ -1,5 +1,5 @@
 /*
- * JsonDeserializer.cpp, part of VCMI engine
+ * JsonUpdater.cpp, part of VCMI engine
  *
  * Authors: listed in file AUTHORS in main folder
  *
@@ -8,102 +8,99 @@
  *
  */
 #include "StdInc.h"
-#include "JsonDeserializer.h"
+#include "JsonUpdater.h"
 
 #include "../JsonNode.h"
 
-JsonDeserializer::JsonDeserializer(const IInstanceResolver * instanceResolver_, const JsonNode & root_):
-	JsonTreeSerializer(instanceResolver_, &root_, false, false)
+JsonUpdater::JsonUpdater(const IInstanceResolver * instanceResolver_, const JsonNode & root_)
+	: JsonTreeSerializer(instanceResolver_, &root_, false, true)
 {
 
 }
 
-void JsonDeserializer::serializeInternal(const std::string & fieldName, boost::logic::tribool & value)
+void JsonUpdater::serializeInternal(const std::string & fieldName, boost::logic::tribool & value)
 {
 	const JsonNode & data = currentObject->operator[](fieldName);
-	if(data.getType() != JsonNode::JsonType::DATA_BOOL)
-		value = boost::logic::indeterminate;
-	else
+	if(data.getType() == JsonNode::JsonType::DATA_BOOL)
 		value = data.Bool();
 }
 
-void JsonDeserializer::serializeInternal(const std::string & fieldName, si32 & value, const boost::optional<si32> & defaultValue, const TDecoder & decoder, const TEncoder & encoder)
+void JsonUpdater::serializeInternal(const std::string & fieldName, si32 & value, const boost::optional<si32> & defaultValue, const TDecoder & decoder, const TEncoder & encoder)
 {
-	std::string identifier;
-	serializeString(fieldName, identifier);
-
-	value = defaultValue ? defaultValue.get() : 0;
-
-	if(identifier != "")
-	{
-		si32 rawId = decoder(identifier);
-		if(rawId >= 0)
-			value = rawId;
-	}
+//	std::string identifier;
+//	serializeString(fieldName, identifier);
+//
+//	value = defaultValue ? defaultValue.get() : 0;
+//
+//	if(identifier != "")
+//	{
+//		si32 rawId = decoder(identifier);
+//		if(rawId >= 0)
+//			value = rawId;
+//	}
 }
 
-void JsonDeserializer::serializeInternal(const std::string & fieldName, std::vector<si32> & value, const TDecoder & decoder, const TEncoder & encoder)
+void JsonUpdater::serializeInternal(const std::string & fieldName, std::vector<si32> & value, const TDecoder & decoder, const TEncoder & encoder)
 {
-	const JsonVector & data = currentObject->operator[](fieldName).Vector();
-
-	value.clear();
-	value.reserve(data.size());
-
-	for(const JsonNode elem : data)
-	{
-		si32 rawId = decoder(elem.String());
-
-		if(rawId >= 0)
-			value.push_back(rawId);
-	}
+//	const JsonVector & data = currentObject->operator[](fieldName).Vector();
+//
+//	value.clear();
+//	value.reserve(data.size());
+//
+//	for(const JsonNode elem : data)
+//	{
+//		si32 rawId = decoder(elem.String());
+//
+//		if(rawId >= 0)
+//			value.push_back(rawId);
+//	}
 }
 
-void JsonDeserializer::serializeInternal(const std::string & fieldName, double & value, const boost::optional<double> & defaultValue)
+void JsonUpdater::serializeInternal(const std::string & fieldName, double & value, const boost::optional<double> & defaultValue)
 {
 	const JsonNode & data = currentObject->operator[](fieldName);
 
-	if(!data.isNumber())
-		value = defaultValue ? defaultValue.get() : 0;//todo: report error on not null?
-	else
+	if(data.isNumber())
 		value = data.Float();
 }
 
-void JsonDeserializer::serializeInternal(const std::string & fieldName, si64 & value, const boost::optional<si64> & defaultValue)
+void JsonUpdater::serializeInternal(const std::string & fieldName, si64 & value, const boost::optional<si64> &)
 {
 	const JsonNode & data = currentObject->operator[](fieldName);
 
-	if(!data.isNumber())
-		value = defaultValue ? defaultValue.get() : 0;//todo: report error on not null?
-	else
+	if(data.isNumber())
 		value = data.Integer();
 }
 
-void JsonDeserializer::serializeInternal(const std::string & fieldName, si32 & value, const boost::optional<si32> & defaultValue, const std::vector<std::string> & enumMap)
+void JsonUpdater::serializeInternal(const std::string & fieldName, si32 & value, const boost::optional<si32> & defaultValue, const std::vector<std::string> & enumMap)
 {
-	const std::string & valueName = currentObject->operator[](fieldName).String();
-
-	const si32 actualOptional = defaultValue ? defaultValue.get() : 0;
-
-	si32 rawValue = vstd::find_pos(enumMap, valueName);
-	if(rawValue < 0)
-		value = actualOptional;
-	else
-		value = rawValue;
+//	const std::string & valueName = currentObject->operator[](fieldName).String();
+//
+//	const si32 actualOptional = defaultValue ? defaultValue.get() : 0;
+//
+//	si32 rawValue = vstd::find_pos(enumMap, valueName);
+//	if(rawValue < 0)
+//		value = actualOptional;
+//	else
+//		value = rawValue;
 }
 
-void JsonDeserializer::serializeInternal(std::string & value)
+void JsonUpdater::serializeInternal(std::string & value)
 {
 	value = currentObject->String();
 }
 
-void JsonDeserializer::serializeInternal(int64_t & value)
+void JsonUpdater::serializeInternal(int64_t & value)
 {
 	value = currentObject->Integer();
 }
 
-void JsonDeserializer::serializeLIC(const std::string & fieldName, const TDecoder & decoder, const TEncoder & encoder, const std::vector<bool> & standard, std::vector<bool> & value)
+void JsonUpdater::serializeLIC(const std::string & fieldName, const TDecoder & decoder, const TEncoder & encoder, const std::vector<bool> & standard, std::vector<bool> & value)
 {
 	const JsonNode & field = currentObject->operator[](fieldName);
+
+	if(field.isNull())
+		return;
 
 	const JsonNode & anyOf = field["anyOf"];
 	const JsonNode & allOf = field["allOf"];
@@ -127,9 +124,12 @@ void JsonDeserializer::serializeLIC(const std::string & fieldName, const TDecode
 	readLICPart(noneOf, decoder, false, value);
 }
 
-void JsonDeserializer::serializeLIC(const std::string & fieldName, LIC & value)
+void JsonUpdater::serializeLIC(const std::string & fieldName, LIC & value)
 {
 	const JsonNode & field = currentObject->operator[](fieldName);
+
+	if(field.isNull())
+		return;
 
 	const JsonNode & anyOf = field["anyOf"];
 	const JsonNode & allOf = field["allOf"];
@@ -172,9 +172,12 @@ void JsonDeserializer::serializeLIC(const std::string & fieldName, LIC & value)
 	}
 }
 
-void JsonDeserializer::serializeLIC(const std::string & fieldName, LICSet & value)
+void JsonUpdater::serializeLIC(const std::string & fieldName, LICSet & value)
 {
 	const JsonNode & field = currentObject->operator[](fieldName);
+
+	if(field.isNull())
+		return;
 
 	const JsonNode & anyOf = field["anyOf"];
 	const JsonNode & allOf = field["allOf"];
@@ -217,28 +220,21 @@ void JsonDeserializer::serializeLIC(const std::string & fieldName, LICSet & valu
 	}
 }
 
-void JsonDeserializer::serializeString(const std::string & fieldName, std::string & value)
-{
-	value = currentObject->operator[](fieldName).String();
-}
-
-void JsonDeserializer::serializeRaw(const std::string & fieldName, JsonNode & value, const boost::optional<const JsonNode &> defaultValue)
+void JsonUpdater::serializeString(const std::string & fieldName, std::string & value)
 {
 	const JsonNode & data = currentObject->operator[](fieldName);
-	if(data.getType() == JsonNode::JsonType::DATA_NULL)
-	{
-		if(defaultValue)
-			value = defaultValue.get();
-		else
-			value.clear();
-	}
-	else
-	{
-		value = data;
-	}
+	if(data.getType() == JsonNode::JsonType::DATA_STRING)
+		value = data.String();
 }
 
-void JsonDeserializer::readLICPart(const JsonNode & part, const TDecoder & decoder, const bool val, std::vector<bool> & value)
+void JsonUpdater::serializeRaw(const std::string & fieldName, JsonNode & value, const boost::optional<const JsonNode &> defaultValue)
+{
+	const JsonNode & data = currentObject->operator[](fieldName);
+	if(data.getType() != JsonNode::JsonType::DATA_NULL)
+		value = data;
+}
+
+void JsonUpdater::readLICPart(const JsonNode & part, const TDecoder & decoder, const bool val, std::vector<bool> & value)
 {
 	for(size_t index = 0; index < part.Vector().size(); index++)
 	{
@@ -250,12 +246,12 @@ void JsonDeserializer::readLICPart(const JsonNode & part, const TDecoder & decod
 			if(rawId < value.size())
 				value[rawId] = val;
 			else
-				logGlobal->error("JsonDeserializer::serializeLIC: id out of bounds %d", rawId);
+				logGlobal->error("JsonUpdater::serializeLIC: id out of bounds %d", rawId);
 		}
 	}
 }
 
-void JsonDeserializer::readLICPart(const JsonNode & part, const TDecoder & decoder, std::set<si32> & value)
+void JsonUpdater::readLICPart(const JsonNode & part, const TDecoder & decoder, std::set<si32> & value)
 {
 	for(size_t index = 0; index < part.Vector().size(); index++)
 	{

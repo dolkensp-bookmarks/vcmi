@@ -23,6 +23,7 @@
 class CLegacyConfigParser;
 class CCreatureHandler;
 class CCreature;
+class JsonSerializeFormat;
 
 class DLL_LINKAGE CCreature : public Creature, public CBonusSystemNode
 {
@@ -159,7 +160,6 @@ public:
 
 	bool valid() const;
 
-	void setId(CreatureID ID); //assigns idNumber and updates bonuses to reference it
 	void addBonus(int val, Bonus::BonusType type, int subtype = -1);
 	std::string nodeName() const override;
 
@@ -171,6 +171,9 @@ public:
 		else
 			return ammMin + (ranGen() % (ammMax - ammMin));
 	}
+
+	void updateFrom(const JsonNode & data);
+	void serializeJson(JsonSerializeFormat & handler);
 
 	template <typename Handler> void serialize(Handler &h, const int version)
 	{

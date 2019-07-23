@@ -17,7 +17,8 @@
 #include "CTownHandler.h"
 #include "CModHandler.h"
 #include "StringConstants.h"
-
+#include "serializer/JsonDeserializer.h"
+#include "serializer/JsonUpdater.h"
 #include "mapObjects/CObjectClassesHandler.h"
 
 int32_t CCreature::getIndex() const
@@ -242,8 +243,22 @@ CCreature::CCreature()
 
 void CCreature::addBonus(int val, Bonus::BonusType type, int subtype)
 {
-	auto added = std::make_shared<Bonus>(Bonus::PERMANENT, type, Bonus::CREATURE_ABILITY, val, idNumber, subtype, Bonus::BASE_NUMBER);
-	addNewBonus(added);
+	auto selector = Selector::typeSubtype(type, subtype).And(Selector::source(Bonus::CREATURE_ABILITY, getIndex()));
+	BonusList & exported = getExportedBonusList();
+
+	BonusList existing;
+	exported.getBonuses(existing, selector, Selector::all);
+
+	if(existing.empty())
+	{
+		auto added = std::make_shared<Bonus>(Bonus::PERMANENT, type, Bonus::CREATURE_ABILITY, val, getIndex(), subtype, Bonus::BASE_NUMBER);
+		addNewBonus(added);
+	}
+	else
+	{
+		std::shared_ptr<Bonus> b = existing[0];
+		b->val = val;
+	}
 }
 
 bool CCreature::isMyUpgrade(const CCreature *anotherCre) const
@@ -267,15 +282,71 @@ bool CCreature::isItNativeTerrain(int terrain) const
 	return (*VLC->townh)[faction]->nativeTerrain == terrain;
 }
 
-void CCreature::setId(CreatureID ID)
+void CCreature::updateFrom(const JsonNode & data)
 {
-	idNumber = ID;
-	for(auto bonus : getExportedBonusList())
+	const JsonNode & node = data["config"];
+
+	JsonUpdater handler(nullptr, node);
+	serializeJson(handler);
+
+	if(!node["hitPoints"].isNull())
+		addBonus(node["hitPoints"].Integer(), Bonus::STACK_HEALTH);
+
+	if(!node["speed"].isNull())
+		addBonus(node["speed"].Integer(), Bonus::STACKS_SPEED);
+
+	if(!node["attack"].isNull())
+		addBonus(node["attack"].Integer(), Bonus::PRIMARY_SKILL, PrimarySkill::ATTACK);
+
+	if(!node["defense"].isNull())
+		addBonus(node["defense"].Integer(), Bonus::PRIMARY_SKILL, PrimarySkill::DEFENSE);
+
+	if(!node["damage"]["min"].isNull())
+		addBonus(node["damage"]["min"].Integer(), Bonus::CREATURE_DAMAGE, 1);
+
+	if(!node["damage"]["max"].isNull())
+		addBonus(node["damage"]["max"].Integer(), Bonus::CREATURE_DAMAGE, 2);
+
+	if(!node["shots"].isNull())
+		addBonus(node["shots"].Integer(), Bonus::SHOTS);
+
+	if(!node["spellPoints"].isNull())
+		addBonus(node["spellPoints"].Integer(), Bonus::CASTS);
+}
+
+void CCreature::serializeJson(JsonSerializeFormat & handler)
+{
 	{
-		if(bonus->source == Bonus::CREATURE_ABILITY)
-			bonus->sid = ID;
+		auto nameNode = handler.enterStruct("name");
+		handler.serializeString("singular", nameSing);
+		handler.serializeString("plural", namePl);
 	}
-	CBonusSystemNode::treeHasChanged();
+
+	handler.serializeInt("fightValue", fightValue);
+	handler.serializeInt("aiValue", AIValue);
+	handler.serializeInt("growth", growth);
+	handler.serializeInt("horde", hordeGrowth);// Needed at least until configurable buildings
+
+	{
+		auto advMapNode = handler.enterStruct("advMapAmount");
+		handler.serializeInt("min", ammMin);
+		handler.serializeInt("max", ammMax);
+	}
+
+	if(handler.updating)
+	{
+		cost.serializeJson(handler, "cost");
+		handler.serializeInt("faction", faction);//TODO: unify with deferred resolve
+	}
+
+	handler.serializeInt("level", level);
+	handler.serializeBool("doubleWide", doubleWide);
+
+	if(!handler.saving)
+	{
+        if(ammMin>ammMax)
+			logMod->error("Invalid creature '%s' configuration, advMapAmount.min > advMapAmount.max", identifier);
+	}
 }
 
 void CCreature::fillWarMachine()
@@ -296,39 +367,6 @@ void CCreature::fillWarMachine()
 		break;
 	}
 	warMachine = ArtifactID::NONE; //this creature is not artifact
-}
-
-static void AddAbility(CCreature *cre, const JsonVector &ability_vec)
-{
-	auto nsf = std::make_shared<Bonus>();
-	std::string type = ability_vec[0].String();
-
-	auto it = bonusNameMap.find(type);
-
-	if (it == bonusNameMap.end()) {
-		if (type == "DOUBLE_WIDE")
-			cre->doubleWide = true;
-		else if (type == "ENEMY_MORALE_DECREASING") {
-			cre->addBonus(-1, Bonus::MORALE);
-			cre->getBonusList().back()->effectRange = Bonus::ONLY_ENEMY_ARMY;
-		}
-		else if (type == "ENEMY_LUCK_DECREASING") {
-			cre->addBonus(-1, Bonus::LUCK);
-			cre->getBonusList().back()->effectRange = Bonus::ONLY_ENEMY_ARMY;
-		} else
-			logGlobal->error("Error: invalid ability type %s in creatures config", type);
-
-		return;
-	}
-
-	nsf->type = it->second;
-
-	JsonUtils::parseTypedBonusShort(ability_vec,nsf);
-
-	nsf->source = Bonus::CREATURE_ABILITY;
-	nsf->sid = cre->idNumber;
-
-	cre->addNewBonus(nsf);
 }
 
 CCreatureHandler::CCreatureHandler()
@@ -530,47 +568,34 @@ CCreature * CCreatureHandler::loadFromJson(const std::string & scope, const Json
 	{
 		doubledCreatures.insert(CreatureID(index));
 	}
-
-	const JsonNode & name = node["name"];
+	cre->idNumber = CreatureID(index);
+	cre->iconIndex = cre->getIndex() + 2;
 	cre->identifier = identifier;
-	cre->nameSing = name["singular"].String();
-	cre->namePl = name["plural"].String();
+
+	JsonDeserializer handler(nullptr, node);
+	cre->serializeJson(handler);
 
 	cre->cost = Res::ResourceSet(node["cost"]);
 
-	cre->fightValue = node["fightValue"].Float();
-	cre->AIValue = node["aiValue"].Float();
-	cre->growth = node["growth"].Float();
-	cre->hordeGrowth = node["horde"].Float(); // Needed at least until configurable buildings
+	cre->addBonus(node["hitPoints"].Integer(), Bonus::STACK_HEALTH);
+	cre->addBonus(node["speed"].Integer(), Bonus::STACKS_SPEED);
+	cre->addBonus(node["attack"].Integer(), Bonus::PRIMARY_SKILL, PrimarySkill::ATTACK);
+	cre->addBonus(node["defense"].Integer(), Bonus::PRIMARY_SKILL, PrimarySkill::DEFENSE);
 
-	cre->addBonus(node["hitPoints"].Float(), Bonus::STACK_HEALTH);
-	cre->addBonus(node["speed"].Float(), Bonus::STACKS_SPEED);
-	cre->addBonus(node["attack"].Float(), Bonus::PRIMARY_SKILL, PrimarySkill::ATTACK);
-	cre->addBonus(node["defense"].Float(), Bonus::PRIMARY_SKILL, PrimarySkill::DEFENSE);
+	cre->addBonus(node["damage"]["min"].Integer(), Bonus::CREATURE_DAMAGE, 1);
+	cre->addBonus(node["damage"]["max"].Integer(), Bonus::CREATURE_DAMAGE, 2);
 
-	cre->addBonus(node["damage"]["min"].Float(), Bonus::CREATURE_DAMAGE, 1);
-	cre->addBonus(node["damage"]["max"].Float(), Bonus::CREATURE_DAMAGE, 2);
+	assert(node["damage"]["min"].Integer() <= node["damage"]["max"].Integer());
 
-	assert(node["damage"]["min"].Float() <= node["damage"]["max"].Float());
+	if(!node["shots"].isNull())
+		cre->addBonus(node["shots"].Integer(), Bonus::SHOTS);
 
-	cre->ammMin = node["advMapAmount"]["min"].Float();
-	cre->ammMax = node["advMapAmount"]["max"].Float();
-	assert(cre->ammMin <= cre->ammMax);
-
-	if (!node["shots"].isNull())
-		cre->addBonus(node["shots"].Float(), Bonus::SHOTS);
-
-	if (node["spellPoints"].isNull())
-		cre->addBonus(node["spellPoints"].Float(), Bonus::CASTS);
-
-	cre->doubleWide = node["doubleWide"].Bool();
+	if(!node["spellPoints"].isNull())
+		cre->addBonus(node["spellPoints"].Integer(), Bonus::CASTS);
 
 	loadStackExperience(cre, node["stackExperience"]);
 	loadJsonAnimation(cre, node["graphics"]);
 	loadCreatureJson(cre, node);
-
-	cre->setId(CreatureID(index));
-	cre->iconIndex = cre->getIndex() + 2;
 
 	for(auto & extraName : node["extraNames"].Vector())
 	{
@@ -716,12 +741,12 @@ void CCreatureHandler::loadCrExpBon()
 			expBonParser.endLine();
 		}
 		//skeleton gets exp penalty
-			objects[56].get()->addBonus(-50, Bonus::EXP_MULTIPLIER, -1);
-			objects[57].get()->addBonus(-50, Bonus::EXP_MULTIPLIER, -1);
+		objects[56].get()->addBonus(-50, Bonus::EXP_MULTIPLIER, -1);
+		objects[57].get()->addBonus(-50, Bonus::EXP_MULTIPLIER, -1);
 		//exp for tier >7, rank 11
-			expRanks[0].push_back(147000);
-			expAfterUpgrade = 75; //percent
-			maxExpPerBattle[0] = maxExpPerBattle[7];
+		expRanks[0].push_back(147000);
+		expAfterUpgrade = 75; //percent
+		maxExpPerBattle[0] = maxExpPerBattle[7];
 
 	}//end of Stack Experience
 }
@@ -810,7 +835,6 @@ void CCreatureHandler::loadJsonAnimation(CCreature * cre, const JsonNode & graph
 
 void CCreatureHandler::loadCreatureJson(CCreature * creature, const JsonNode & config)
 {
-	creature->level = config["level"].Float();
 	creature->animDefName = config["graphics"]["animation"].String();
 
 	//FIXME: MOD COMPATIBILITY
@@ -822,6 +846,7 @@ void CCreatureHandler::loadCreatureJson(CCreature * creature, const JsonNode & c
 			{
 				auto b = JsonUtils::parseBonus(ability.second);
 				b->source = Bonus::CREATURE_ABILITY;
+				b->sid = creature->getIndex();
 				b->duration = Bonus::PERMANENT;
 				creature->addNewBonus(b);
 			}
@@ -831,15 +856,15 @@ void CCreatureHandler::loadCreatureJson(CCreature * creature, const JsonNode & c
 	{
 		for(const JsonNode &ability : config["abilities"].Vector())
 		{
-			if (ability.getType() == JsonNode::JsonType::DATA_VECTOR)
+			if(ability.getType() == JsonNode::JsonType::DATA_VECTOR)
 			{
-				assert(0); // should be unused now
-				AddAbility(creature, ability.Vector()); // used only for H3 creatures
+				logMod->error("Ignored outdated creature ability format in %s", creature->getJsonKey());
 			}
 			else
 			{
 				auto b = JsonUtils::parseBonus(ability);
 				b->source = Bonus::CREATURE_ABILITY;
+				b->sid = creature->getIndex();
 				b->duration = Bonus::PERMANENT;
 				creature->addNewBonus(b);
 			}

@@ -40,8 +40,8 @@ const std::vector<UnitProxy::RegType> UnitProxy::REGISTER =
 		LuaCallWrapper<const IBonusBearer>::createFunctor(&IBonusBearer::getAttack)
 	},
 	{
-		"getDefence",
-		LuaCallWrapper<const IBonusBearer>::createFunctor(&IBonusBearer::getDefence)
+		"getDefense",
+		LuaCallWrapper<const IBonusBearer>::createFunctor(&IBonusBearer::getDefense)
 	},
 	{
 		"isAlive",

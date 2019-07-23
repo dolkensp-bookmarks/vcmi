@@ -162,6 +162,7 @@
 		<Unit filename="scripting/PoolTest.cpp" />
 		<Unit filename="scripting/ScriptFixture.cpp" />
 		<Unit filename="scripting/ScriptFixture.h" />
+		<Unit filename="serializer/JsonUpdaterTest.cpp" />
 		<Unit filename="spells/AbilityCasterTest.cpp" />
 		<Unit filename="spells/CSpellTest.cpp" />
 		<Unit filename="spells/TargetConditionTest.cpp" />

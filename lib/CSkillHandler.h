@@ -16,6 +16,8 @@
 #include "GameConstants.h"
 #include "IHandlerBase.h"
 
+class JsonSerializeFormat;
+
 class DLL_LINKAGE CSkill : public Skill
 {
 public:
@@ -67,6 +69,9 @@ public:
 	std::string identifier;
 	std::string name; //as displayed in GUI
 	std::array<si32, 2> gainChance; // gainChance[0/1] = default gain chance on level-up for might/magic heroes
+
+	void updateFrom(const JsonNode & data);
+	void serializeJson(JsonSerializeFormat & handler);
 
 	template <typename Handler> void serialize(Handler & h, const int version)
 	{

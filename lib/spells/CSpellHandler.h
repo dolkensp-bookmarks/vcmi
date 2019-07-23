@@ -26,6 +26,7 @@ class IAdventureSpellMechanics;
 class CBattleInfoCallback;
 class AdventureSpellCastParameters;
 class SpellCastEnvironment;
+class JsonSerializeFormat;
 
 namespace test
 {
@@ -294,6 +295,9 @@ public:
 	const std::string & getIconScroll() const;
 
 	const std::string & getCastSound() const override;
+
+	void updateFrom(const JsonNode & data);
+	void serializeJson(JsonSerializeFormat & handler);
 
 	template <typename Handler> void serialize(Handler & h, const int version)
 	{

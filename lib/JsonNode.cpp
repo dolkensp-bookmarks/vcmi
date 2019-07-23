@@ -433,8 +433,7 @@ void JsonUtils::parseTypedBonusShort(const JsonVector& source, std::shared_ptr<B
 	dest->turnsRemain = 0;
 }
 
-
-std::shared_ptr<Bonus> JsonUtils::parseBonus (const JsonVector &ability_vec) //TODO: merge with AddAbility, create universal parser for all bonus properties
+std::shared_ptr<Bonus> JsonUtils::parseBonus(const JsonVector & ability_vec)
 {
 	auto b = std::make_shared<Bonus>();
 	std::string type = ability_vec[0].String();
@@ -449,6 +448,7 @@ std::shared_ptr<Bonus> JsonUtils::parseBonus (const JsonVector &ability_vec) //T
 	parseTypedBonusShort(ability_vec, b);
 	return b;
 }
+
 template <typename T>
 const T & parseByMap(const std::map<std::string, T> & map, const JsonNode * val, std::string err)
 {

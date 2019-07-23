@@ -61,6 +61,17 @@ void CHero::registerIcons(const IconRegistar & cb) const
 	cb(getIconIndex(), "PORTRAITSSMALL", portraitSmall);
 }
 
+void CHero::updateFrom(const JsonNode & data)
+{
+	//todo: CHero::updateFrom
+}
+
+void CHero::serializeJson(JsonSerializeFormat & handler)
+{
+
+}
+
+
 SecondarySkill CHeroClass::chooseSecSkill(const std::set<SecondarySkill> & possibles, CRandomGenerator & rand) const //picks secondary skill out from given possibilities
 {
 	int totalProb = 0;
@@ -123,6 +134,17 @@ void CHeroClass::registerIcons(const IconRegistar & cb) const
 {
 
 }
+
+void CHeroClass::updateFrom(const JsonNode & data)
+{
+	//TODO: CHeroClass::updateFrom
+}
+
+void CHeroClass::serializeJson(JsonSerializeFormat & handler)
+{
+
+}
+
 
 CHeroClass::CHeroClass()
  : faction(0), id(), affinity(0), defaultTavernChance(0), commander(nullptr)
@@ -465,7 +487,7 @@ void AddSpecialtyForCreature(int creatureID, std::shared_ptr<Bonus> bonus, std::
 
 		bonus = std::make_shared<Bonus>(*bonus);
 		bonus->subtype = PrimarySkill::DEFENSE;
-		bonus->updater.reset(new GrowsWithLevelUpdater(specCreature.getDefence(false), stepSize));
+		bonus->updater.reset(new GrowsWithLevelUpdater(specCreature.getDefense(false), stepSize));
 		result.push_back(bonus);
 	}
 }
@@ -636,7 +658,7 @@ std::vector<std::shared_ptr<Bonus>> SpecialtyBonusToBonuses(const SSpecialtyBonu
 					if(creatureLimiter)
 					{
 						const CCreature * cre = creatureLimiter->creature;
-						int creStat = newBonus->subtype == PrimarySkill::ATTACK ? cre->getAttack(false) : cre->getDefence(false);
+						int creStat = newBonus->subtype == PrimarySkill::ATTACK ? cre->getAttack(false) : cre->getDefense(false);
 						int creLevel = cre->level ? cre->level : 5;
 						newBonus->updater = std::make_shared<GrowsWithLevelUpdater>(creStat, creLevel);
 					}

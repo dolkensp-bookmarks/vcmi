@@ -143,6 +143,16 @@ bool CFaction::hasTown() const
 	return town != nullptr;
 }
 
+void CFaction::updateFrom(const JsonNode & data)
+{
+
+}
+
+void CFaction::serializeJson(JsonSerializeFormat & handler)
+{
+
+}
+
 
 CTown::CTown()
 	: faction(nullptr), mageLevel(0), primaryRes(0), moatDamage(0), defaultTavernChance(0)

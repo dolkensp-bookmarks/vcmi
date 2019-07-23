@@ -667,7 +667,7 @@ public:
 	virtual int getMinDamage(bool ranged) const;
 	virtual int getMaxDamage(bool ranged) const;
 	virtual int getAttack(bool ranged) const;
-	virtual int getDefence(bool ranged) const;
+	virtual int getDefense(bool ranged) const;
 
 	int MoraleVal() const; //range [-3, +3]
 	int LuckVal() const; //range [-3, +3]

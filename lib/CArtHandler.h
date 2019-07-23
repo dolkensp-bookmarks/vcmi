@@ -81,6 +81,9 @@ public:
 
 	virtual void levelUpArtifact (CArtifactInstance * art){};
 
+	void updateFrom(const JsonNode & data);
+	void serializeJson(JsonSerializeFormat & handler);
+
 	template <typename Handler> void serialize(Handler &h, const int version)
 	{
 		h & static_cast<CBonusSystemNode&>(*this);

@@ -164,6 +164,16 @@ void CArtifact::addNewBonus(const std::shared_ptr<Bonus>& b)
 	CBonusSystemNode::addNewBonus(b);
 }
 
+void CArtifact::updateFrom(const JsonNode& data)
+{
+	//TODO:CArtifact::updateFrom
+}
+
+void CArtifact::serializeJson(JsonSerializeFormat & handler)
+{
+
+}
+
 void CArtifact::fillWarMachine()
 {
 	switch(id)

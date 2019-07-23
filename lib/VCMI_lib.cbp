@@ -431,6 +431,8 @@
 		<Unit filename="serializer/JsonSerializer.cpp" />
 		<Unit filename="serializer/JsonSerializer.h" />
 		<Unit filename="serializer/JsonTreeSerializer.h" />
+		<Unit filename="serializer/JsonUpdater.cpp" />
+		<Unit filename="serializer/JsonUpdater.h" />
 		<Unit filename="spells/AbilityCaster.cpp" />
 		<Unit filename="spells/AbilityCaster.h" />
 		<Unit filename="spells/AdventureSpellMechanics.cpp" />

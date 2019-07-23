@@ -25,6 +25,7 @@ class CGHeroInstance;
 struct BattleHex;
 class JsonNode;
 class CRandomGenerator;
+class JsonSerializeFormat;
 
 struct SSpecialtyInfo
 {	si32 type;
@@ -107,6 +108,9 @@ public:
 	const std::string & getJsonKey() const override;
 	HeroTypeID getId() const override;
 	void registerIcons(const IconRegistar & cb) const override;
+
+	void updateFrom(const JsonNode & data);
+	void serializeJson(JsonSerializeFormat & handler);
 
 	template <typename Handler> void serialize(Handler &h, const int version)
 	{
@@ -198,6 +202,9 @@ public:
 
 	bool isMagicHero() const;
 	SecondarySkill chooseSecSkill(const std::set<SecondarySkill> & possibles, CRandomGenerator & rand) const; //picks secondary skill out from given possibilities
+
+	void updateFrom(const JsonNode & data);
+	void serializeJson(JsonSerializeFormat & handler);
 
 	template <typename Handler> void serialize(Handler & h, const int version)
 	{

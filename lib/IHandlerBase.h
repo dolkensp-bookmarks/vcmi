@@ -126,6 +126,18 @@ public:
 		return objects[index];
 	}
 
+	void updateEntity(int32_t index, const JsonNode & data)
+	{
+		if(index < 0 || index >= objects.size())
+		{
+			logMod->error("%s id %d is invalid", getTypeNames()[0], index);
+		}
+		else
+		{
+			objects.at(index)->updateFrom(data);
+		}
+	}
+
 	size_t size() const
 	{
 		return objects.size();

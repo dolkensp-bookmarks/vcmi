@@ -1,6 +1,6 @@
 local logError = logError
 local ReceiverBase = require("core:erm.ReceiverBase")
-local BattleUnitsChanged = require("netpacks.EntitiesChanged")
+local EntitiesChanged = require("netpacks.EntitiesChanged")
 
 local CREATURE = 3
 
@@ -15,7 +15,7 @@ local function creatureByIndex(index)
 end
 
 local function sendChanges(creatureIndex, data)
-	local pack = BattleUnitsChanged.new()
+	local pack = EntitiesChanged.new()
 
 	pack:update(CREATURE, creatureIndex, data)
 
@@ -86,7 +86,7 @@ function MA:C(x, creatureIndex, resIndex, cost)
 		local creature = creatureByIndex(creatureIndex)
 		return nil, nil, creature:getCost(resIndex)
 	else
-		packData = {config = {cost = {[RES[resIndex]] = cost}}}
+		local packData = {config = {cost = {[RES[resIndex]] = cost}}}
 		sendChanges(creatureIndex, packData)
 	end
 end

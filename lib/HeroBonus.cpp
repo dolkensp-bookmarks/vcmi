@@ -575,7 +575,7 @@ int IBonusBearer::getAttack(bool ranged) const
 	return getBonuses(selector, nullptr, cachingStr)->totalValue();
 }
 
-int IBonusBearer::getDefence(bool ranged) const
+int IBonusBearer::getDefense(bool ranged) const
 {
 	const std::string cachingStr = "type_PRIMARY_SKILLs_DEFENSE";
 

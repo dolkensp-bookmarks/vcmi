@@ -25,6 +25,7 @@ class JsonNode;
 class CTown;
 class CFaction;
 struct BattleHex;
+class JsonSerializeFormat;
 
 /// a typical building encountered in every castle ;]
 /// this is structure available to both client and server
@@ -163,6 +164,9 @@ public:
 	FactionID getId() const override;
 
 	bool hasTown() const override;
+
+	void updateFrom(const JsonNode & data);
+	void serializeJson(JsonSerializeFormat & handler);
 
 	template <typename Handler> void serialize(Handler &h, const int version)
 	{

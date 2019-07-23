@@ -755,7 +755,7 @@ TDmgRange CBattleInfoCallback::calculateDmgRange(const BattleAttackInfo & info) 
 	attackDefenceDifference += info.attacker->getAttack(info.shooting) * multAttackReduction;
 
 	double multDefenceReduction = 1.0 - battleBonusValue(attackerBonuses, Selector::type(Bonus::ENEMY_DEFENCE_REDUCTION)) / 100.0;
-	attackDefenceDifference -= info.defender->getDefence(info.shooting) * multDefenceReduction;
+	attackDefenceDifference -= info.defender->getDefense(info.shooting) * multDefenceReduction;
 
 	const std::string cachingStrSlayer = "type_SLAYER";
 	static const auto selectorSlayer = Selector::type(Bonus::SLAYER);
